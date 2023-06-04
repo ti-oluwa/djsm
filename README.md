@@ -20,7 +20,7 @@ import djsm
 Before starting, a '.env' file as to be created somewhere in the django project directory(preferably the root directory).
 In the file, the following should be added;
 
--[x] `SECRETS_FILE_PATH` -> Absolute path to file where all secrets will be stored.
+- **`SECRETS_FILE_PATH`** -> Absolute path to file where all secrets will be stored.
 Example:
 
 ```
@@ -28,28 +28,28 @@ SECRETS_FILE_PATH = ".secrets/pathtofile/secrets.json"
 ```
 It is advisable to save secrets in an hidden folder(by prefixing the path with a period - '.')
 
--[x] `SECRETS_FILE_FALLBACKS_PATHS` -> Absolute paths to existing secrets file(s), stringed together and separated by a delimiter(usually comma), in the project if any. They would be used if any error is encountered while using the preferred secrets file.
+- **`SECRETS_FILE_FALLBACKS_PATHS`** -> Absolute paths to existing secrets file(s), stringed together and separated by a delimiter(usually comma), in the project if any. They would be used if any error is encountered while using the preferred secrets file.
 Example:
 
 ```
 SECRETS_FILE_FALLBACKS_PATHS = ".secrets/pathtofile/secrets.json,.secrets/pathtofile/secrets2.json,.secrets/pathtofile/secrets3.json "
 ```
 
--[x] `DJANGO_SECRET_KEY_NAME` -> Name with which the Django secret key should be stored.
+- **`DJANGO_SECRET_KEY_NAME`** -> Name with which the Django secret key should be stored.
 Example:
 
 ```
 DJANGO_SECRET_KEY_NAME = 'secret_key'
 ```
 
--[x] `DJANGO_SECRET_KEY_FILE_PATH` -> DJSM stores the Django secret key in a separate file, whose file path is provided by this variable, otherwise, the Django secret key is stored in the secrets file.
+- **`DJANGO_SECRET_KEY_FILE_PATH`** -> DJSM stores the Django secret key in a separate file, whose file path is provided by this variable, otherwise, the Django secret key is stored in the secrets file.
 Example:
 
 ```
 DJANGO_SECRET_KEY_FILE_PATH = ".secrets/pathtofile/secret_key.json"
 ```
 
--[x] `DJANGO_SECRET_KEY_FALLBACKS_PATHS` -> Absolute paths to existing secret_key file(s), stringed together and separated by a delimiter(usually comma), in the project if any. They would be used if any error is encountered while using the preferred secret_key file.
+- **`DJANGO_SECRET_KEY_FALLBACKS_PATHS`** -> Absolute paths to existing secret_key file(s), stringed together and separated by a delimiter(usually comma), in the project if any. They would be used if any error is encountered while using the preferred secret_key file.
 Example:
 
 ```
@@ -91,7 +91,7 @@ SECRET_KEY = djsm.generate_secret_key()
 
 ```
 
-### Updating or Adding new secrets
+### Updating or adding new secrets
 To add a new secret:
 
 ```python
@@ -99,7 +99,7 @@ new_secret = {"DB_PASSWORD": "db_password"}
 djsm.update_secrets(new_secret)
 
 ```
-Once the update as been performed you can delete these lines.
+Once the update has been performed you can delete these lines.
 
 ### Get all secrets
 To get all secrets:
