@@ -5,6 +5,8 @@ DJSM is a light weight python module that allows you to store secrets encrypted 
 
 [View Project on PyPI](https://pypi.org/project/djsm/)
 
+### NOTE: This project is still in development and is not yet production stable. Use at your own risk.
+
 ## Installation
 * Install the package using pip
 ```bash

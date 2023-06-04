@@ -28,6 +28,7 @@ if os.environ.get('DJANGO_SECRET_KEY_NAME', None):
     djsm.django_secret_key_name = os.environ.get('DJANGO_SECRET_KEY_NAME')
 if os.environ.get('DJANGO_SECRET_KEY_FILE_PATH', None):
     djsm.django_secret_key_file_path = os.environ.get('DJANGO_SECRET_KEY_FILE_PATH')
+djsm.secrets_fallbacks = os.environ.get('SECRETS_FILE_FALLBACKS_PATHS', '').split(',')
 djsm.secret_key_fallbacks = os.environ.get('DJANGO_SECRET_KEY_FALLBACKS_PATHS', '').split(',')
 
 

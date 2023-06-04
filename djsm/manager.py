@@ -21,6 +21,7 @@ class DjangoJSONSecretManager:
     django_secret_key_name: str = 'django_secret_key'
     django_secret_key_file_path: str = None
     secret_key_fallbacks: List[str] = []
+    secrets_fallbacks: List[str] = []
 
     def __init__(self, path_to_secret_file: str):
         if not path_to_secret_file.endswith('.json'):
@@ -119,8 +120,19 @@ class DjangoJSONSecretManager:
         Gets secrets from a json secret files
 
         :return: secrets
-        """ 
-        secrets = self._load_secrets()
+        """
+        secrets = {}
+        try:
+            secrets = self._load_secrets()
+        except Exception:
+            warnings.warn(f'DJSM: Could not load secrets from secret file. Fallbacks will be used if any!')
+            for fallback in self.secrets_fallbacks:
+                try:
+                    secrets = self._load_secrets(fallback)
+                    self.path_to_secret_file = fallback
+                    break
+                except Exception:
+                    continue
         if self.django_secret_key_file_path != self.path_to_secret_file:
             secrets.update(self._load_secrets(self.django_secret_key_file_path))
         return secrets
@@ -165,7 +177,7 @@ class DjangoJSONSecretManager:
             fallbacks = filter(lambda path_to_fallback_secret_key_file: bool(path_to_fallback_secret_key_file), self.secret_key_fallbacks)
             fallback_djsms = map(lambda path: DjangoJSONSecretManager(path), fallbacks)
             for fallback_djsm in fallback_djsms:
-                print(f"DJSM: Searching for Fallbacks...")
+                print(f"DJSM: Searching for Key Fallbacks...")
                 fallback_djsm.django_secret_key_name = self.django_secret_key_name
                 secret_key = fallback_djsm.generate_secret_key()
                 if secret_key:
