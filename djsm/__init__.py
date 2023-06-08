@@ -12,23 +12,23 @@ __author__ = "ti-oluwa"
 __license__ = "MIT"
 
 import os
+from dotenv import load_dotenv, find_dotenv
+
 from .manager import DjangoJSONSecretManager as DJSM
+from .manager import EnvLoadError
+
+# load environment variables from .env file
+try:
+    load_dotenv(find_dotenv('.env', raise_error_if_not_found=True), override=True)
+except Exception as e:
+    raise EnvLoadError("Could not load environmental variables because '.env' file was not found. Create one!")
 
 env_variables = [
     "SECRETS_FILE_PATH",
-    "SECRETS_FILE_FALLBACKS_PATHS",
     "DJANGO_SECRET_KEY_NAME",
     "DJANGO_SECRET_KEY_FILE_PATH",
-    "DJANGO_SECRET_KEY_FALLBACKS_PATHS"
 ]
 
 # Pre-instantiate a DJSM object
 djsm = DJSM(os.environ.get('SECRETS_FILE_PATH'))
-if os.environ.get('DJANGO_SECRET_KEY_NAME', None):
-    djsm.django_secret_key_name = os.environ.get('DJANGO_SECRET_KEY_NAME')
-if os.environ.get('DJANGO_SECRET_KEY_FILE_PATH', None):
-    djsm.django_secret_key_file_path = os.environ.get('DJANGO_SECRET_KEY_FILE_PATH')
-djsm.secrets_fallbacks = os.environ.get('SECRETS_FILE_FALLBACKS_PATHS', '').split(',')
-djsm.secret_key_fallbacks = os.environ.get('DJANGO_SECRET_KEY_FALLBACKS_PATHS', '').split(',')
-
 

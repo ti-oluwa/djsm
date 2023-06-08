@@ -1,117 +1,168 @@
-from typing import Any, Dict, List
+from typing import Any, Dict
 from django.core.management import utils
 import os
-import json
+from bs4_web_scraper.file_handler import FileHandler
+import bs4_web_scraper
 import warnings
-from dotenv import load_dotenv, find_dotenv
+
+
+from .jcrypt import JSONCrypt
+
 
 
 class EnvLoadError(Exception):
     pass
-
-# load environment variables from .env file
-try:
-    load_dotenv(find_dotenv('.env', raise_error_if_not_found=True), override=True)
-except Exception as e:
-    raise EnvLoadError("Could not load environmental variables because '.env' file was not found. Create one!")
 
 
 class DjangoJSONSecretManager:
 
     django_secret_key_name: str = 'django_secret_key'
     django_secret_key_file_path: str = None
-    secret_key_fallbacks: List[str] = []
-    secrets_fallbacks: List[str] = []
 
     def __init__(self, path_to_secret_file: str):
         if not path_to_secret_file.endswith('.json'):
             raise ValueError('Secret file must be a json file')
 
         self.path_to_secret_file = path_to_secret_file
-        self.django_secret_key_file_path = self.path_to_secret_file
-        self.create_secrets_file(self.path_to_secret_file)
+        self.django_secret_key_file_path = os.environ.get('DJANGO_SECRET_KEY_FILE_PATH') if os.environ.get('DJANGO_SECRET_KEY_FILE_PATH', None) else self.path_to_secret_file
+        self.django_secret_key_name = os.environ.get('DJANGO_SECRET_KEY_NAME') if os.environ.get('DJANGO_SECRET_KEY_NAME', None) else self.django_secret_key_name
 
+    @property
+    def path_to_key_file(self):
+        return f"{os.path.dirname(self.path_to_secret_file)}\cryptkeys.json"
     
     def __setattr__(self, __name: str, __value: Any) -> None:
         if "path" in __name:
             __value = os.path.abspath(__value)
         return super().__setattr__(__name, __value)
 
+    def encrypt(self, secret: Dict) -> Dict:
+        """
+        Encrypts a secret using the encryption key.
 
-    def generate_secret_key(self):
+        :param secret: secret to be encrypted
+        :return: encrypted secret
+        """
+        if not isinstance(secret, dict):
+            raise TypeError("secret must be a dict")
+        
+        f_key, pub_key, priv_key = self._get_crypt_keys()
+
+        if all([f_key, pub_key, priv_key]) == False:
+            f_key, pub_key, priv_key = JSONCrypt.generate_key_as_str()
+            crypt_keys = {
+                'f_key': f_key,
+                'pub_key': pub_key,
+                'priv_key': priv_key,
+            }
+            key_file_hdl = FileHandler(self.path_to_key_file)
+            key_file_hdl.write_to_file(crypt_keys)
+            key_file_hdl.close_file()
+            
+        jcrypt = JSONCrypt.from_str(f_key, pub_key, priv_key)
+        encrypted_secret = jcrypt.j_encrypt(secret)
+        return encrypted_secret
+
+
+    def decrypt(self, encrypted_secret: Dict) -> Dict:
+        """
+        Decrypts an encrypted secret using the encryption key.
+
+        :param encrypted_secret: encrypted secret to be decrypted
+        :return: decrypted secret
+        """
+        if not isinstance(encrypted_secret, dict):
+            raise TypeError("encrypted_secret must be a dict")
+
+        f_key, pub_key, priv_key = self._get_crypt_keys()
+        if all([f_key, pub_key, priv_key]) == False:
+            raise ValueError("Crypt key(s) not found")
+
+        jcrypt = JSONCrypt.from_str(f_key, pub_key, priv_key)
+        decrypted_secret = jcrypt.j_decrypt(encrypted_secret)
+        return decrypted_secret
+
+
+    def _get_crypt_keys(self):
+        """
+        Returns the encryption keys
+        """
+        keys = {}
+        try:
+            key_file_hdl = FileHandler(self.path_to_key_file)
+            keys: Dict = key_file_hdl.read_file()
+            key_file_hdl.close_file()
+        except Exception:
+            pass
+        return keys.get('f_key', None), keys.get('pub_key', None), keys.get('priv_key', None)
+
+
+    def change_crypt_keys(self):
+        """Change the encryption keys"""
+        secret_key = self._load_secrets(self.django_secret_key_file_path) if self.django_secret_key_file_path else {}
+        secrets = self._load_secrets(self.path_to_secret_file)
+        FileHandler(self.path_to_key_file).delete_file()
+
+        if secret_key:
+            self._write_secrets(secret_key, self.django_secret_key_file_path, encrypt=True)
+        self._write_secrets(secrets, self.path_to_secret_file, encrypt=True)
+        return None
+        
+
+    def generate_secret_key(self, always_generate: bool = False):
         """
         Generates and saves a secret key in json secret file if it is non-existent.
 
         the secret key will be saved to the path specified in the constructor
+        or the path specified in the `DJANGO_SECRET_KEY_FILE_PATH` environment variable.
+
+        Args::
+            always_generate: if True, a new secret key will be generated and saved
+            even if one already exists in the secret file.
         :return: secret key
-        """
-        
-        self.create_secrets_file(self.django_secret_key_file_path)
+        """ 
         secrets = self._load_secrets(self.django_secret_key_file_path)
-        if not secrets.get(self.django_secret_key_name, None):
+        if not secrets.get(self.django_secret_key_name, None) or always_generate:
             print("DJSM: Generating Secret Key")
             secrets[self.django_secret_key_name] = utils.get_random_secret_key()
-            self._write_secrets(secrets, self.django_secret_key_file_path)
+            self._write_secrets(secrets, self.django_secret_key_file_path, overwrite=True)
         return self.get_secret_key()
 
 
-    def create_secrets_file(self, path_to_secret_file: str) -> bool:
-        """
-        Creates a json file for storing secrets if it does not exist yet.
-
-        :param path_to_secret_file: path to the json file
-        :return: True if file was created else False
-        """
-
-        os.makedirs(os.path.dirname(path_to_secret_file), exist_ok=True)
-        if os.path.exists(path_to_secret_file):
-            loadable: bool = self._check_json_loadable(path_to_secret_file)
-            if not loadable:
-                # Overwrite file content
-                self._write_secrets({}, path_to_secret_file, 'w')
-            return False
-        else:
-            self._write_secrets({}, path_to_secret_file, 'x')
-        return True
-
-
-    def _write_secrets(self, secrets: Dict[str, Any], path_to_file: str | None = None, mode: str = 'w') -> None:
+    def _write_secrets(self, secrets: Dict[str, Any], path_to_file: str | None = None, overwrite: bool = False, encrypt: bool = True) -> None:
         if not isinstance(secrets, dict):
             raise TypeError('Secret must be a dictionary')
         path_to_file = self.path_to_secret_file if not path_to_file else path_to_file
+        file_hdl = FileHandler(path_to_file)
+        if not file_hdl.filetype == "json":
+            raise TypeError("Secret file must be a json file")
 
-        with open(path_to_file, mode=mode, encoding='utf-8') as secrets_file:
-            secrets_file.write(json.dumps(secrets, indent=4))
-        return None
+        if secrets and encrypt:
+            secrets = self.encrypt(secrets)
+        if overwrite:
+            file_hdl.write_to_file(secrets)
+        else:
+            file_hdl.update_json(secrets)
+        return file_hdl.close_file()
 
     
-    def _load_secrets(self, path_to_file: str | None = None) -> Dict | None:
+    def _load_secrets(self, path_to_file: str | None = None, decrypt: bool = True):
         path_to_file = self.path_to_secret_file if not path_to_file else path_to_file
+        try:
+            file_hdl = FileHandler(path_to_file)
+            if not file_hdl.filetype == "json":
+                raise TypeError("Secret file must be a json file")
 
-        loadable = self._check_json_loadable(path_to_file)
-        if not loadable:
-            return None
-        with open(path_to_file, mode='r', encoding='utf-8') as secrets_file:
-            secrets = json.load(secrets_file)
+            secrets = file_hdl.read_file()
+            file_hdl.close_file()
+            if not isinstance(secrets, dict):
+                raise TypeError('Secrets must be a dictionary')
+            if secrets and decrypt:
+                secrets = self.decrypt(secrets)
+
+        except bs4_web_scraper.FileError:
+            secrets = {}
         return secrets
-
-
-    @staticmethod
-    def _check_json_loadable(path: str) -> bool:
-        """
-        Checks that the `path` points to a JSON serializable file. 
-
-        :param path: path to the file to be checked
-        :return: True if JSON serializable else False
-        """
-        with open(path, 'r') as file:
-            try:
-                _ = json.load(file)
-                return True
-            except json.decoder.JSONDecodeError:
-                pass
-        file.close()
-        return False
 
 
     @property
@@ -121,20 +172,12 @@ class DjangoJSONSecretManager:
 
         :return: secrets
         """
-        secrets = {}
-        try:
-            secrets = self._load_secrets()
-        except Exception:
-            warnings.warn(f'DJSM: Could not load secrets from secret file. Fallbacks will be used if any!')
-            for fallback in self.secrets_fallbacks:
-                try:
-                    secrets = self._load_secrets(fallback)
-                    self.path_to_secret_file = fallback
-                    break
-                except Exception:
-                    continue
+        secrets = self._load_secrets()
         if self.django_secret_key_file_path != self.path_to_secret_file:
-            secrets.update(self._load_secrets(self.django_secret_key_file_path))
+            try:
+                secrets.update(self._load_secrets(self.django_secret_key_file_path))
+            except:
+                pass
         return secrets
 
 
@@ -164,29 +207,22 @@ class DjangoJSONSecretManager:
         return self._write_secrets(_secrets)
 
 
-    def get_secret_key(self) -> str | None:
+    def get_secret_key(self):
         """
-        Gets secret key from a json secrets. If the key is not found, it will fallback to the list of paths provided
+        Gets secret key from json secrets. If the key is not found or invalid, a new one is generated.
 
-        :param fallbacks: list of paths to json files to fallback to
         :return: secret key
         """
         secret_key = self.get_secret(self.django_secret_key_name)
-        if not self._validate_secret_key(secret_key):
-            warnings.warn(f'DJSM: Invalid Key Found!')
-            fallbacks = filter(lambda path_to_fallback_secret_key_file: bool(path_to_fallback_secret_key_file), self.secret_key_fallbacks)
-            fallback_djsms = map(lambda path: DjangoJSONSecretManager(path), fallbacks)
-            for fallback_djsm in fallback_djsms:
-                print(f"DJSM: Searching for Key Fallbacks...")
-                fallback_djsm.django_secret_key_name = self.django_secret_key_name
-                secret_key = fallback_djsm.generate_secret_key()
-                if secret_key:
-                    break
-        return secret_key if self._validate_secret_key(secret_key) else None
+        if not self.validate_secret_key(secret_key):
+            warnings.warn("DJSM: Invalid Secret Key Found. Generating New Secret Key")
+            # Generate a new secret key if the secret key is not valid
+            secret_key = self.generate_secret_key(always_generate=True)
+        return secret_key if self.validate_secret_key(secret_key) else None
 
 
     @staticmethod
-    def _validate_secret_key(secret_key: str):
+    def validate_secret_key(secret_key: str):
         if not isinstance(secret_key, str):
             return False
         if len(secret_key) != 50:
