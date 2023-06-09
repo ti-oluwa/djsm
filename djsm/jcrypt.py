@@ -6,8 +6,24 @@ from .crypt import Crypt
 
 class JSONCrypt(Crypt):
     """
-    Encrypts and decrypts JSON objects using Fernet + RSA encryption.
+    ### A subclass of the Crypt class that encrypts and decrypts JSON objects.
+
+    :param enc_fernet_key: encrypted fernet key string
+    :param public_key: public key
+    :param private_key: private key
+    :param hash_algorithm: hash algorithm to use for signing and verifying.
+    Supported algorithms are: 'SHA-1', 'SHA-224', 'SHA-256', 'SHA-384', 'SHA-512'.
+
+    :attr rsa_key_strength: rsa encryption key strength.
+    :attr sign_and_verify_key: whether to sign and verify the fernet key on encryption and decryption. Default to True.
+    :attr suppress_warnings: whether to suppress all warnings during encryption and decryption.
+
+    :prop rsa_key_length: rsa encryption key length.
+
+    NOTE: The higher the encryption key strength, the longer it takes to encrypt and decrypt but the more secure it is.
+    There a three levels
     """
+    sign_and_verify_key = True
     suppress_warnings = False
 
     def j_encrypt(self, json_object: Any):

@@ -1,15 +1,13 @@
 # DJSM - Django JSON Secrets Manager
 
 ## What is DJSM?
-DJSM is a light weight python module that allows you to store secrets encrypted in a JSON file and access them easily in your Django project. It provides a simple interface to access the secrets in a JSON file. DJSM uses Fernet encryption combine with rsa encryption to key secrets secure.
+DJSM is a light weight python module that allows you to store secrets encrypted in a JSON file and access them easily in your Django project. It provides a simple interface to access the secrets in a JSON file. DJSM uses Fernet encryption combine with RSA encryption to keep secrets secure.
 
-[View Project on PyPI](https://pypi.org/project/djsm/)
-
-
-**THIS MODULE IS STILL BEING DEVELOPED. YOU CAN INSTALL AND TEST IN YOUR APPLICATION AS IT IS STILL FUNCTIONAL BUT IS NOT PRODUCTION READY** 
+[View Project on PyPI](https://pypi.org/project/djsm/) - NOT LIVE YET
 
 
 ## Installation
+**YET TO BE PUBLISHED**
 * Install the package using pip
 ```bash
 pip install djsm
@@ -30,7 +28,7 @@ Example:
 ```
 SECRETS_FILE_PATH = ".secrets/pathtofile/secrets.json"
 ```
-It is advisable to save secrets in an hidden folder(by prefixing the path with a period - '.')
+It is advisable to save secrets in an hidden folder(by prefixing the path with a period - '.'
 
 
 - **`DJANGO_SECRET_KEY_NAME`** -> Name with which the Django secret key should be stored.
@@ -57,13 +55,19 @@ from djsm import djsm
 ```
 
 ### Generating a secret key or getting an existing key
-To generate a secret key, in settings.py implement:
+To generate a secret key:
+
+```python
+new_secret_key = djsm.generate_django_secret_key()
+```
+
+Or in settings.py implement:
 
 ```python
 
 # SECURITY WARNING: keep the secret key used in production secret!
 # generate secret key if it does not exist
-SECRET_KEY = djsm.generate_secret_key()
+SECRET_KEY = djsm.get_or_create_secret_key()
 
 ```
 
@@ -92,17 +96,9 @@ secret_key = djsm.get_secret_key()
 
 ```
 
-### Get all secrets
-To get all secrets:
+**DO NOT DELETE `cryptkeys.json`. IF YOU DO, ALL ENCRYPTED SECRET WILL BE LOST**
 
-```python
-all_secrets = djsm.secrets 
-
-```
-
-**DO NOT DELETE `cryptkeys.json`. IF YOU DO ALL ENCRYPTED SECRET WILL BE LOST**
-
-**NOTE: DJSM just provides an added layer of security in managing secrets in your application. It has not been tested to completely attack proof**
+**NOTE: DJSM just provides an added layer of security in managing secrets in your application. It has not been tested to be completely attack proof**
 
 #### Contributors and feedbacks are welcome. For feedbacks, please open an issue or contact me at tioluwa.dev@gmail.com or on twitter [@ti_oluwa_](https://twitter.com/ti_oluwa_)
 
