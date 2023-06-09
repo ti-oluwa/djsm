@@ -12,16 +12,12 @@ __author__ = "ti-oluwa"
 __license__ = "MIT"
 
 import os
-from dotenv import load_dotenv, find_dotenv
 
 from .manager import DjangoJSONSecretManager as DJSM
-from .manager import EnvLoadError
+from .manager import EnvLoadError, find_and_load_env_var, CryptKeysNotFound
 
-# load environment variables from .env file
-try:
-    load_dotenv(find_dotenv('.env', raise_error_if_not_found=True), override=True)
-except Exception as e:
-    raise EnvLoadError("Could not load environmental variables because '.env' file was not found. Create one!")
+
+find_and_load_env_var()
 
 env_variables = [
     "SECRETS_FILE_PATH",

@@ -2,6 +2,7 @@ import rsa
 import base64
 from cryptography.fernet import Fernet
 
+
 SUPPOTED_RSA_KEY_LENGTHS = [1024, 2048, 4096]
 
 ENCRYPTION_LEVELS = [
@@ -17,7 +18,7 @@ class KeyVerificationError(Exception):
 
 class Crypt:
     """
-    ### Encrypts and decrypts text using RSA and Fernet Encryption
+    ### Encrypts and decrypts text using Fernet + RSA Encryption
 
     :param enc_fernet_key: encrypted fernet key string
     :param public_key: public key
@@ -31,10 +32,10 @@ class Crypt:
     :prop rsa_key_length: rsa encryption key length
 
     NOTE: The higher the encryption key strength, the longer it takes to encrypt and decrypt but the more secure it is.
-    There a four levels
+    There a three levels
     """
     rsa_key_strength = 1
-    sign_and_verify_key = True
+    sign_and_verify_key = False
     hash_algorithm = 'SHA-512'
 
     def __init__(self, enc_fernet_key: bytes, rsa_public_key: rsa.PublicKey, rsa_private_key: rsa.PrivateKey, hash_algorithm: str = 'SHA-512'):
@@ -133,7 +134,7 @@ class Crypt:
         """
         Generates a key tuple containing strings.
         
-        :param encoding: encoding to be used to generate the key strings
+        :param encoding: encoding to be used to encode the key strings
         :return: encrypted Fernet key, rsa public key and rsa private key used to encrypted the Fernet key
         :rtype : str
         """
@@ -151,7 +152,7 @@ class Crypt:
         :param enc_fernet_key: encrypted fernet key string
         :param public_key: public key string
         :param private_key: private key string
-        :param encoding: encoding used to generate the key strings
+        :param encoding: encoding used to encode the key strings
         :return: Crypt object
         """
         enc_fernet_key = cls._load_enc_f_key_from_str(enc_fernet_key, encoding=encoding)
