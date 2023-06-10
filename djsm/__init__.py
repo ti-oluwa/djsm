@@ -12,12 +12,14 @@ __author__ = "ti-oluwa"
 __license__ = "MIT"
 
 import os
+import sys
 
 from .manager import DjangoJSONSecretManager as DJSM
-from .manager import EnvLoadError, find_and_load_env_var, CryptKeysNotFound
+from .manager import EnvLoadError, find_and_load_env_var, CryptKeysNotFound, check_setup_ok
 
-
-find_and_load_env_var()
+__setup_ok = check_setup_ok()
+if not __setup_ok:
+    sys.exit()
 
 env_variables = [
     "SECRETS_FILE_PATH",
@@ -26,5 +28,5 @@ env_variables = [
 ]
 
 # Pre-instantiate a DJSM object
-djsm = DJSM(os.environ.get('SECRETS_FILE_PATH'))
+djsm = DJSM(os.getenv('SECRETS_FILE_PATH'))
 

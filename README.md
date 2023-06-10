@@ -7,9 +7,7 @@ DJSM is a light weight python module that allows you to store secrets encrypted 
 [View Project on PyPI](https://pypi.org/project/djsm/) - NOT LIVE YET
 
 
-## Installation
-
-**YET TO BE PUBLISHED**
+## Installation and Quick Setup
 
 * Install the package using pip
 
@@ -17,11 +15,30 @@ DJSM is a light weight python module that allows you to store secrets encrypted 
 pip install djsm
 ```
 
+* Initial setup:
+Copy this into a .env file in your project (adjust as needed)
+
+```.env
+SECRETS_FILE_PATH = ".hidden_folder/pathtofile/secrets_file.json"
+
+# NOT MANDATORY
+DJANGO_SECRET_KEY_NAME = "__secret_key_name__"
+DJANGO_SECRET_KEY_FILE_PATH = ".hidden_folder/pathtofile/secret_key_file.json"
+```
+
 * Import the package in your Django project
 
 ```python
 import djsm
 ```
+
+* Run server
+
+```bash
+python manage.py runserver
+```
+
+If everything was setup successfully, you should see "Setup OK!" on the terminal.
 
 ## Usage
 
@@ -31,7 +48,7 @@ In the file, the following should be added;
 * **`SECRETS_FILE_PATH`** -> Path(preferably absolute) to file where all secrets will be stored.
 Example:
 
-```env
+```.env
 SECRETS_FILE_PATH = ".secrets/pathtofile/secrets.json"
 ```
 
@@ -40,14 +57,14 @@ It is advisable to save secrets in an hidden folder(by prefixing the path with a
 * **`DJANGO_SECRET_KEY_NAME`** -> Name with which the Django secret key should be stored.
 Example:
 
-```env
+```.env
 DJANGO_SECRET_KEY_NAME = 'secret_key'
 ```
 
 * **`DJANGO_SECRET_KEY_FILE_PATH`** -> DJSM stores the Django secret key in a separate file, whose file path is provided by this variable, otherwise, the Django secret key is stored in the secrets file.
 Example:
 
-```env
+```.env
 
 DJANGO_SECRET_KEY_FILE_PATH = ".secrets/pathtofile/secret_key.json"
 ```
@@ -101,10 +118,6 @@ To get a secret:
 ```python
 # get a secret, say DB_PASSWORD
 db_password = djsm.get_secret("DB_PASSWORD")
-
-# get secret key
-secret_key = djsm.get_secret_key()
-
 ```
 
 ## Classes and Functions
@@ -114,27 +127,39 @@ secret_key = djsm.get_secret_key()
 This class is the main class of the module. It provides the following methods:
 
 * `get_secret(secret_name)` -> Returns the secret with the name `secret_name` if it exists, otherwise returns `None`
-* `update_secrets(new_secrets)` -> Updates the secrets file with the new secrets provided in the `new_secrets` dictionary. If a secret already exists, it is updated, otherwise, it is added.
-* `get_secret_key()` -> Returns the Django secret key if it exists, otherwise returns `None`
+
+* `update_secrets(new_secrets)` -> Updates the secrets file with the new secrets provided in the `new_secrets` dictionary.
+If a secret already exists, it is updated, otherwise, it is added.
+
 * `generate_django_secret_key()` -> Generates a new Django secret key and returns it
+
 * `get_or_create_secret_key()` -> Returns the Django secret key if it exists, otherwise generates a new one and returns it
+
+* `change_secret_key()` -> Replaces the Django secret key with a new one. This is useful if you want to change the Django secret key.
+
 * `validate_secret_key()` -> Validates the Django secret key. Returns `True` if the key is valid, otherwise returns `False`
-* `write_secret(secret, path_to_secret_file, **kwargs)` -> Writes secrets to the secrets file whose path is provided.
-* `load_secret(path_to_secret_file, **kwargs)` -> Loads secrets from the secrets file whose path is provided.
+
+* `write_secrets(secrets, path_to_secret_file, **kwargs)` -> Writes secrets to the secrets file whose path is provided.
+
+* `load_secrets(path_to_secret_file, **kwargs)` -> Loads secrets from the secrets file whose path is provided.
+
 * `encrypt(secret)` -> Encrypts the secret provided and returns the encrypted secret.
+
 * `decrypt(encrypted_secret)` -> Decrypts the encrypted secret provided and returns the decrypted secret.
+
 * `change_crypt_keys()` -> Changes the encryption keys used to encrypt and decrypt secrets. This is useful if you want to change the encryption keys used to encrypt and decrypt existing secrets.
 
 How to use the `DjangoJSONSecretManager` class:
 
 ```python
-from djsm import djsm
+import os
+from djsm import DJSM  # DJSM is an alias for DjangoJSONSecretManager
+
+# Instantiation
+djsm = DJSM(os.getenv('SECRETS_FILE_PATH'))
 
 # get a secret, say DB_PASSWORD
 db_password = djsm.get_secret("DB_PASSWORD")
-
-# get secret key
-secret_key = djsm.get_secret_key()
 
 # generate a new secret key
 new_secret_key = djsm.generate_django_secret_key()
@@ -159,7 +184,7 @@ encrypted_secret = djsm.encrypt(secret)
 # decrypt a secret
 decrypted_secret = djsm.decrypt(encrypted_secret)
 
-# change crypt keys
+# change encryption and decryption keys
 djsm.change_crypt_keys()
 
 ```
@@ -181,12 +206,38 @@ It provides the following methods:
 
 The class has the following attributes/properties:
 
-* `rsa_key_strength` -> The strength of the RSA key used to encrypt and decrypt the fernet key. The default is 1 (1024 bits). This can be 1, 2  or 3 (1024, 2048 or 4096 bits respectively).
+* `rsa_key_strength` -> The strength of the RSA keys used to encrypt and decrypt the fernet key. The default is 1 (1024 bits). This can be 1, 2  or 3 (1024, 2048 or 4096 bits respectively).
 
-* `sign_and_verify_key` -> Whether to sign and verify the encrypted fernet key. 
+* `sign_and_verify_key` -> Whether to sign and verify the encrypted fernet key.
 
 * `hash_algorithm` -> The hash algorithm to use for signing and verifying the encrypted fernet key. The default is SHA512. This can be 'SHA-1', 'SHA-224', 'SHA-256', 'SHA-384' or 'SHA-512'.
 
+Usage:
+
+```python
+from djsm.crypt import Crypt
+
+# Get keys
+fernet_key, rsa_pub_key, rsa_priv_key = Crypt.generate_key()
+
+# Get key strings
+fernet_key_str, rsa_pub_key_str, rsa_priv_key_str = Crypt.generate_key_as_str()
+
+# Instantiating a Crypt object from keys
+crypt = Crypt(fernet_key, rsa_pub_key, rsa_priv_key, hash_algorithm="SHA-256")
+
+# Instantiating a Crypt object from key strings
+crypt = Crypt.from_str(fernet_key_str, rsa_pub_key_str, rsa_priv_key_str, hash_algorithm="SHA-256")
+text = 'Text I want to keep secret.'
+
+# Encrypt text
+cipher_text = crypt.encrypt(text)
+
+# decrypt text
+decrypted_text = crypt.decrypt(cipher_text)
+assert text == decrypted_text
+
+```
 
 ### `JSONCrypt`
 
@@ -195,6 +246,42 @@ This class provides methods for encrypting and decrypting JSON parsable objects 
 * `j_encrypt(json_object)` -> Encrypts JSON parsable object and returns the encrypted object.
 
 * `j_decrypt(encrypted_object)` -> Decrypts the encrypted JSON parsable object and returns the decrypted object.
+
+Usage:
+
+```python
+from djsm.jcrypt import JSONCrypt
+
+# Changing class variables by creating a subclass and modifying the variables in the subclass
+class CustomJSONCrypt(JSONCrypt):
+    rsa_key_strength = 2
+    hash_algorithm = "SHA-1"
+
+fernet_key, rsa_pub_key, rsa_priv_key = CustomJSONCrypt.generate_key()
+
+jcrypt = CustomJSONCrypt(fernet_key, rsa_pub_key, rsa_priv_key)
+
+dictionary = {
+    'foo': 'bar'
+    'integer': 12345,
+    'dict': {
+        'foo': 'bar'
+        'integer': 12345,
+    },
+    'array': [
+        {'key': 'value'},
+        [1, 2, 3, 4, 5],
+    ]
+}
+
+# Encrypting the dictionary
+encrypted_dict = jcrypt.j_encrypt(dictionary)
+
+# Decrypting the encrypted dictionary
+decrypted_dict = jcrypt.j_decrypt(encrypted_dict)
+
+assert dictionary == decrypted_dict
+```
 
 ### Other functions and constants
 
@@ -215,7 +302,6 @@ print(env_variables)
 ```
 
 **DO NOT DELETE `cryptkeys.json`. IF YOU DO, ALL ENCRYPTED SECRET WILL BE LOST**
-
 **NOTE: DJSM just provides an added layer of security in managing secrets in your application. It has not been tested to be completely attack proof**
 
 #### Contributors and feedbacks are welcome. For feedbacks, please open an issue or contact me at tioluwa.dev@gmail.com or on twitter [@ti_oluwa_](https://twitter.com/ti_oluwa_)
