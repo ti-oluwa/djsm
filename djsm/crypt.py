@@ -57,7 +57,7 @@ class Crypt:
         """
         Generates key tuple.
 
-        :returns : a tuple of encrypted Fernet key, the rsa public key and rsa private key used to encrypt the Fernet key
+        :returns: a tuple of encrypted Fernet key, the rsa public key and rsa private key used to encrypt the Fernet key
         """
         f_key = Fernet.generate_key()
         nbits = cls._get_rsa_key_length()
