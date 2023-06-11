@@ -30,13 +30,20 @@ DJSM_SECRET_KEY_FILE_PATH = ".hidden_folder/pathtofile/secret_key_file.json"
 Your project structure should look like this:
 
 ```
-my_project
 ├── my_project
-│   ├── __init__.py
-│   ├── settings.py
-│   ├── urls.py
-│   └── wsgi.py
-
+│   ├── my_project
+|   |   ├── __init__.py
+|   |   ├── settings.py
+|   |   ├── urls.py
+|   |   └── wsgi.py
+|   |
+│   ├── my_app
+|       ├── __init__.py 
+|       ├── admin.py
+|       ├── apps.py
+|       ├── models.py
+|       ├── tests.py
+|       └── views.py                 
 ├── venv
 ├── .env
 ├── .gitignore
