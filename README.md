@@ -17,7 +17,7 @@ pip install djsm
 
 * Initial setup:
 
-Copy this into a .env file in your project (adjust as needed)
+Copy this into a .env file just outside your project (adjust as needed)
 
 ```.env
 DJSM_SECRETS_FILE_PATH = ".hidden_folder/pathtofile/secrets_file.json"
@@ -25,6 +25,30 @@ DJSM_SECRETS_FILE_PATH = ".hidden_folder/pathtofile/secrets_file.json"
 # NOT MANDATORY
 DJSM_SECRET_KEY_NAME = "__secret_key_name__"
 DJSM_SECRET_KEY_FILE_PATH = ".hidden_folder/pathtofile/secret_key_file.json"
+```
+
+Your project structure should look like this:
+
+```bash
+├── my_project
+│   ├── my_project
+|   |   ├── __init__.py
+|   |   ├── settings.py
+|   |   ├── urls.py
+|   |   └── wsgi.py
+|   |
+│   ├── my_app
+|       ├── __init__.py 
+|       ├── admin.py
+|       ├── apps.py
+|       ├── models.py
+|       ├── tests.py
+|       └── views.py                 
+├── venv
+├── .env
+├── .gitignore
+├── manage.py
+└── requirements.txt
 ```
 
 * Import the package in your Django project
@@ -45,7 +69,7 @@ If everything was setup successfully, you should see "Setup OK!" on the terminal
 
 ## Usage
 
-Before starting, a '.env' file as to be created somewhere in the django project directory(preferably the root directory).
+Before starting, a '.env' file as to be created just outside the django project directory.
 In the file, the following should be added;
 
 * **`DJSM_SECRETS_FILE_PATH`** -> Path(preferably absolute) to file where all secrets will be stored.
