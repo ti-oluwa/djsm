@@ -29,7 +29,7 @@ DJSM_SECRET_KEY_FILE_PATH = ".hidden_folder/pathtofile/secret_key_file.json"
 
 Your project structure should look like this:
 
-```
+```bash
 ├── my_project
 │   ├── my_project
 |   |   ├── __init__.py
@@ -50,9 +50,6 @@ Your project structure should look like this:
 ├── manage.py
 └── requirements.txt
 ```
-
-
-
 
 * Import the package in your Django project
 
