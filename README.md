@@ -2,9 +2,9 @@
 
 ## What is DJSM?
 
-DJSM is a light weight python module that allows you to store secrets encrypted in a JSON file and access them easily in your Django project. It provides a simple interface to access the secrets in a JSON file. DJSM uses Fernet encryption combine with RSA encryption to keep secrets secure.
+DJSM is a light weight Python module that allows you to store secrets encrypted in a JSON file and access them easily in your Django project. It provides a simple interface to access the secrets in a JSON file. DJSM uses Fernet encryption combined with RSA encryption to keep secrets secure.
 
-[View Project on PyPI](https://pypi.org/project/djsm/) - NOT LIVE YET
+[View Project on PyPI](https://pypi.org/project/djsm/)
 
 
 ## Installation and Quick Setup
@@ -16,17 +16,20 @@ pip install djsm
 ```
 
 * Initial setup:
+
 Copy this into a .env file in your project (adjust as needed)
 
 ```.env
-SECRETS_FILE_PATH = ".hidden_folder/pathtofile/secrets_file.json"
+DJSM_SECRETS_FILE_PATH = ".hidden_folder/pathtofile/secrets_file.json"
 
 # NOT MANDATORY
-DJANGO_SECRET_KEY_NAME = "__secret_key_name__"
-DJANGO_SECRET_KEY_FILE_PATH = ".hidden_folder/pathtofile/secret_key_file.json"
+DJSM_SECRET_KEY_NAME = "__secret_key_name__"
+DJSM_SECRET_KEY_FILE_PATH = ".hidden_folder/pathtofile/secret_key_file.json"
 ```
 
 * Import the package in your Django project
+
+In settings.py
 
 ```python
 import djsm
@@ -45,7 +48,7 @@ If everything was setup successfully, you should see "Setup OK!" on the terminal
 Before starting, a '.env' file as to be created somewhere in the django project directory(preferably the root directory).
 In the file, the following should be added;
 
-* **`SECRETS_FILE_PATH`** -> Path(preferably absolute) to file where all secrets will be stored.
+* **`DJSM_SECRETS_FILE_PATH`** -> Path(preferably absolute) to file where all secrets will be stored.
 Example:
 
 ```.env
@@ -54,19 +57,19 @@ SECRETS_FILE_PATH = ".secrets/pathtofile/secrets.json"
 
 It is advisable to save secrets in an hidden folder(by prefixing the path with a period - '.'
 
-* **`DJANGO_SECRET_KEY_NAME`** -> Name with which the Django secret key should be stored.
+* **`DJSM_SECRET_KEY_NAME`** -> Name with which the Django secret key should be stored.
 Example:
 
 ```.env
-DJANGO_SECRET_KEY_NAME = 'secret_key'
+DJSM_SECRET_KEY_NAME = 'secret_key'
 ```
 
-* **`DJANGO_SECRET_KEY_FILE_PATH`** -> DJSM stores the Django secret key in a separate file, whose file path is provided by this variable, otherwise, the Django secret key is stored in the secrets file.
+* **`DJSM_SECRET_KEY_FILE_PATH`** -> DJSM stores the Django secret key in a separate file, whose file path is provided by this variable, otherwise, the Django secret key is stored in the secrets file.
 Example:
 
 ```.env
 
-DJANGO_SECRET_KEY_FILE_PATH = ".secrets/pathtofile/secret_key.json"
+DJSM_SECRET_KEY_FILE_PATH = ".secrets/pathtofile/secret_key.json"
 ```
 
 ### Import djsm
@@ -80,13 +83,13 @@ from djsm import djsm
 
 ### Generating a secret key or getting an existing key
 
-To generate a secret key:
+To generate a new secret key:
 
 ```python
 new_secret_key = djsm.generate_django_secret_key()
 ```
 
-Or in settings.py implement:
+Or in settings.py implement (Best Implementation):
 
 ```python
 
@@ -98,7 +101,7 @@ SECRET_KEY = djsm.get_or_create_secret_key()
 
 ### Updating or adding new secrets
 
-To add a new secret:
+To update or add a new secret:
 
 ```python
 new_secret = {"DB_PASSWORD": "db_password"}
@@ -107,9 +110,6 @@ djsm.update_secrets(new_secret)
 ```
 
 Once the update has been performed you can delete these lines.
-
-Alternatively, You can add a new secret by directly editing the secrets file.
-
 
 ### Getting Secrets
 
@@ -137,7 +137,7 @@ If a secret already exists, it is updated, otherwise, it is added.
 
 * `change_secret_key()` -> Replaces the Django secret key with a new one. This is useful if you want to change the Django secret key.
 
-* `validate_secret_key()` -> Validates the Django secret key. Returns `True` if the key is valid, otherwise returns `False`
+* `validate_secret_key(secret_key)` -> Validates the Django secret key. Returns `True` if the key is valid, otherwise returns `False`
 
 * `write_secrets(secrets, path_to_secret_file, **kwargs)` -> Writes secrets to the secrets file whose path is provided.
 
@@ -148,6 +148,12 @@ If a secret already exists, it is updated, otherwise, it is added.
 * `decrypt(encrypted_secret)` -> Decrypts the encrypted secret provided and returns the decrypted secret.
 
 * `change_crypt_keys()` -> Changes the encryption keys used to encrypt and decrypt secrets. This is useful if you want to change the encryption keys used to encrypt and decrypt existing secrets.
+
+* `clean_up()` -> Deletes the secret key file and the secrets file and clears all environment variables set by the module.
+
+* `reload_env()` -> Reloads the environment variables from the .env file.
+
+* `clean_up_and_reload()` -> Calls the `clean_up()` and `reload_env()` methods.
 
 How to use the `DjangoJSONSecretManager` class:
 
@@ -200,9 +206,9 @@ It provides the following methods:
 
 * `from_str(enc_fernet_key: str, rsa_public_key: str, rsa_private_key: str, encoding: str = 'utf-8')` -> Returns an instance of the class with the encrypted fernet key and the keys used to encrypt and decrypt the fernet key provided as strings. The key is decoded using the specified encoding. This is also a class method and can be called without instantiating the class.
 
-* `encrypt(string: str, encoding: str = 'utf-8')` -> Encrypts the string provided and returns the encrypted string. The string is encoded and decoded using the specified encoding.
+* `encrypt(string: str, encoding: str = 'utf-8')` -> Encrypts the string provided and returns the encrypted string. The string is decoded and the cipher string is encoded using the specified encoding.
 
-* `decrypt(cipher_string: str, encoding: str = 'utf-8')` -> Decrypts the cipher string provided and returns the decrypted string. The string is encoded and decoded using the specified encoding (This is usually the same encoding used to encode the string before it was encrypted).
+* `decrypt(cipher_string: str, encoding: str = 'utf-8')` -> Decrypts the cipher string provided and returns the decrypted string. The cipher string is decoded and the decrypted string is encoded using the specified encoding (This is usually the same encoding used during encryption of the string).
 
 The class has the following attributes/properties:
 
@@ -232,6 +238,7 @@ text = 'Text I want to keep secret.'
 
 # Encrypt text
 cipher_text = crypt.encrypt(text)
+print(cipher_text)
 
 # decrypt text
 decrypted_text = crypt.decrypt(cipher_text)
@@ -262,10 +269,10 @@ fernet_key, rsa_pub_key, rsa_priv_key = CustomJSONCrypt.generate_key()
 jcrypt = CustomJSONCrypt(fernet_key, rsa_pub_key, rsa_priv_key)
 
 dictionary = {
-    'foo': 'bar'
+    'foo': 'bar',
     'integer': 12345,
     'dict': {
-        'foo': 'bar'
+        'foo': 'bar',
         'integer': 12345,
     },
     'array': [
@@ -276,6 +283,7 @@ dictionary = {
 
 # Encrypting the dictionary
 encrypted_dict = jcrypt.j_encrypt(dictionary)
+print(encrypted_dict)
 
 # Decrypting the encrypted dictionary
 decrypted_dict = jcrypt.j_decrypt(encrypted_dict)
@@ -285,7 +293,7 @@ assert dictionary == decrypted_dict
 
 ### Other functions and constants
 
-* `find_and_load_env_var()` -> Finds and loads environment variables from the `.env` file in the root directory of the project. This is useful if you want to load newly added environment variables from the `.env` file without restarting the server. This function is called automatically when the `DjangoJSONSecretManager` class is imported.
+* `find_and_load_env_var()` -> Finds and loads environment variables from the `.env` file in the root directory(or any other directory) of the project. This is useful if you want to load newly added environment variables from the `.env` file without restarting the server. This function is called automatically when the `DjangoJSONSecretManager` class is imported.
 
 ```python
 from djsm import find_and_load_env_var
@@ -302,7 +310,13 @@ print(env_variables)
 ```
 
 **DO NOT DELETE `cryptkeys.json`. IF YOU DO, ALL ENCRYPTED SECRET WILL BE LOST**
-**NOTE: DJSM just provides an added layer of security in managing secrets in your application. It has not been tested to be completely attack proof**
+
+#### NOTE: DJSM just provides an added layer of security in managing secrets in your application. It has not been tested to be completely attack proof
+
+### CREDITS
+
+* [python-dotenv](https://pypi.org/project/python-dotenv/)
+* [cryptography](https://pypi.org/project/cryptography/)
 
 #### Contributors and feedbacks are welcome. For feedbacks, please open an issue or contact me at tioluwa.dev@gmail.com or on twitter [@ti_oluwa_](https://twitter.com/ti_oluwa_)
 

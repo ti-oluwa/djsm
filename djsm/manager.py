@@ -12,6 +12,12 @@ from .jcrypt import JSONCrypt
 
 SECRET_KEY_ALLOWED_CHARS = string.ascii_letters + string.digits + string.punctuation
 
+env_variables = [
+    "DJSM_SECRETS_FILE_PATH",
+    "DJSM_SECRET_KEY_NAME",
+    "DJSM_SECRET_KEY_FILE_PATH",
+]
+
 
 def find_and_load_env_var():
     """Load environment variables from .env file"""
@@ -35,8 +41,8 @@ def check_setup_ok():
 
     print("DJSM: Checking that .env file has been properly setup...\n")
     env_file_dict = dotenv_values(find_dotenv(raise_error_if_not_found=True))
-    if not env_file_dict.get('SECRETS_FILE_PATH', None):
-        print('DJSM: SECRETS_FILE_PATH not set in .env file\n')
+    if not env_file_dict.get('DJSM_SECRETS_FILE_PATH', None):
+        print('DJSM: DJSM_SECRETS_FILE_PATH not set in .env file\n')
         setup_ok = False
     if setup_ok:
         print('DJSM: Setup OK!\n')
@@ -72,8 +78,8 @@ class DjangoJSONSecretManager:
             raise ValueError('Secret file must be a json file')
 
         self.__path_to_secret_file = path_to_secret_file
-        self.__django_secret_key_file_path = os.getenv('DJANGO_SECRET_KEY_FILE_PATH') if os.getenv('DJANGO_SECRET_KEY_FILE_PATH') else self.__path_to_secret_file
-        self.__django_secret_key_name = os.getenv('DJANGO_SECRET_KEY_NAME') if os.getenv('DJANGO_SECRET_KEY_NAME') else self.__django_secret_key_name
+        self.__django_secret_key_file_path = os.getenv('DJSM_SECRET_KEY_FILE_PATH') if os.getenv('DJSM_SECRET_KEY_FILE_PATH') else self.__path_to_secret_file
+        self.__django_secret_key_name = os.getenv('DJSM_SECRET_KEY_NAME') if os.getenv('DJSM_SECRET_KEY_NAME') else self.__django_secret_key_name
 
 
     @property
@@ -121,7 +127,7 @@ class DjangoJSONSecretManager:
             env_file_hdl = self.__get_env_hdl()
             env_file_hdl.write_to_file(f'DJSM_RSA_PRIVATE_KEY = "{priv_key}"\n', write_mode='a+')
             env_file_hdl.close_file()
-            find_and_load_env_var()
+            self.reload_env()
             
         jcrypt = JSONCrypt.from_str(f_key, pub_key, priv_key)
         encrypted_secret = jcrypt.j_encrypt(secret)
@@ -332,5 +338,41 @@ class DjangoJSONSecretManager:
         secrets = self.load_secrets(self.__path_to_secret_file, decrypt=True)
         _secrets = {**secrets, **new_secrets}
         return self.write_secrets(_secrets, self.__path_to_secret_file, encrypt=True)
+
+
+    def clean_up(self):
+        """
+        Deletes all secrets in the json secrets, and secret key files. Removes all environment variables
+        set by the package.
+
+        This method is useful when you want to delete all secrets and start afresh.
+        """
+        self.write_secrets({}, self.__path_to_secret_file, overwrite=True, encrypt=False)
+        if self.__django_secret_key_file_path != self.__path_to_secret_file:
+            self.write_secrets({}, self.__django_secret_key_file_path, overwrite=True, encrypt=False)
+        self.__remove_rsa_priv_key_from_env()
+
+        for var in env_variables:
+            os.environ.pop(var, None)
+        return None
+
+
+    def reload_env(self):
+        """
+        Reloads the environment variables from the .env file.
+        """
+        return find_and_load_env_var()
+
+
+    def clean_up_and_reload(self):
+        """
+        Deletes all secrets in the json secrets, and secret key files. Removes all environment variables
+        set by the package and reloads the environment variables from the .env file.
+
+        This method is useful when you want to delete all secrets and start afresh.
+        """
+        self.clean_up()
+        return self.reload_env()
+
 
 
