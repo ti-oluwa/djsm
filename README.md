@@ -2,7 +2,7 @@
 
 ## What is DJSM?
 
-DJSM is a light weight Python module that allows you to store secrets encrypted in a JSON file and access them easily in your Django project. It provides a simple interface to access the secrets in a JSON file. DJSM uses Fernet encryption combined with RSA encryption to keep secrets secure.
+DJSM is a light weight Python module that allows you to store secrets encrypted in a JSON file and access them easily in your Django project. DJSM uses Fernet encryption combined with RSA encryption to keep secrets secure.
 
 [View Project on PyPI](https://pypi.org/project/djsm/)
 
@@ -30,25 +30,30 @@ DJSM_SECRET_KEY_FILE_PATH = ".hidden_folder/pathtofile/secret_key_file.json"
 Your project structure should look like this:
 
 ```bash
-├── my_project
-│   ├── my_project
-|   |   ├── __init__.py
-|   |   ├── settings.py
-|   |   ├── urls.py
-|   |   └── wsgi.py
+
+|-- my_project
+|   |-- my_project
+|   |   |-- __init__.py
+|   |   |-- settings.py
+|   |   |-- urls.py
+|   |   |-- wsgi.py
 |   |
-│   ├── my_app
-|       ├── __init__.py 
-|       ├── admin.py
-|       ├── apps.py
-|       ├── models.py
-|       ├── tests.py
-|       └── views.py                 
-├── venv
-├── .env
-├── .gitignore
-├── manage.py
-└── requirements.txt
+|   |-- my_app
+|   |   |-- __init__.py
+|   |   |-- admin.py
+|   |   |-- apps.py
+|   |   |-- models.py
+|   |   |-- tests.py
+|   |   |-- views.py
+|   |
+|   |-- db.sqlite3
+|   |-- manage.py
+|
+|-- venv
+|-- .env
+|-- .gitignore
+|-- requirements.py
+
 ```
 
 * Import the package in your Django project
@@ -201,11 +206,11 @@ djsm.update_secrets(new_secret)
 # write secrets to a file
 path_to_secret_file = ".secrets/pathtofile/secrets.json"
 new_secret = {"API_KEY": "api_key"}
-djsm.write_secret(new_secret, path_to_secret_file, overwrite=True, encrypt=True)
+djsm.write_secrets(new_secret, path_to_secret_file, overwrite=True, encrypt=True)
 
 # load secrets from a file
 path_to_secret_file = ".secrets/pathtofile/secrets.json"
-secrets = djsm.load_secret(path_to_secret_file, decrypt=True)
+secrets = djsm.load_secrets(path_to_secret_file, decrypt=True)
 
 # encrypt a secret
 secret = {"API_KEY": "api_key"}
@@ -257,7 +262,8 @@ fernet_key_str, rsa_pub_key_str, rsa_priv_key_str = Crypt.generate_key_as_str()
 crypt = Crypt(fernet_key, rsa_pub_key, rsa_priv_key, hash_algorithm="SHA-256")
 
 # Instantiating a Crypt object from key strings
-crypt = Crypt.from_str(fernet_key_str, rsa_pub_key_str, rsa_priv_key_str, hash_algorithm="SHA-256")
+crypt = Crypt.from_str(fernet_key_str, rsa_pub_key_str, rsa_priv_key_str, encoding: str = 'utf-8')
+crypt.hash_algorithm = "SHA-256"
 text = 'Text I want to keep secret.'
 
 # Encrypt text
@@ -341,6 +347,7 @@ print(env_variables)
 
 * [python-dotenv](https://pypi.org/project/python-dotenv/)
 * [cryptography](https://pypi.org/project/cryptography/)
+* [rsa](https://pypi.org/project/rsa/)
 
 #### Contributors and feedbacks are welcome. For feedbacks, please open an issue or contact me at tioluwa.dev@gmail.com or on twitter [@ti_oluwa_](https://twitter.com/ti_oluwa_)
 

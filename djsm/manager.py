@@ -6,6 +6,7 @@ import warnings
 from dotenv import load_dotenv, find_dotenv, dotenv_values
 import string
 import random
+from time import sleep
 
 from .jcrypt import JSONCrypt
 
@@ -209,7 +210,9 @@ class DjangoJSONSecretManager:
 
 
     def change_crypt_keys(self):
-        """Change the encryption keys"""
+        """
+        Change the encryption keys
+        """
         # Get existing secrets
         secret_key = self.load_secrets(self.__django_secret_key_file_path, decrypt=True) if self.__django_secret_key_file_path else {}
         secrets = self.load_secrets(self.__path_to_secret_file, decrypt=True)
