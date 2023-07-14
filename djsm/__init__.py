@@ -7,8 +7,8 @@ djsm helps create, store, retrieve, update and manage secrets in Django
 LICENSE: MIT
 """
 
-__version__ = "0.0.3"
-__author__ = "ti-oluwa"
+__version__ = "0.0.4"
+__author__ = "Daniel T. Afolayan (ti-oluwa)"
 __license__ = "MIT"
 
 import os

@@ -47,6 +47,8 @@ def check_setup_ok():
         setup_ok = False
     if setup_ok:
         print('DJSM: Setup OK!\n')
+    else:
+        print('DJSM: Visit https://github.com/ti-oluwa/djsm/#usage for help on how to setup DJSM\n')
     return setup_ok
  
 

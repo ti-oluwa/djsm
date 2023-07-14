@@ -20,11 +20,11 @@ pip install djsm
 Copy this into a .env file just outside your project (adjust as needed)
 
 ```.env
-DJSM_SECRETS_FILE_PATH = ".hidden_folder/pathtofile/secrets_file.json"
+DJSM_SECRETS_FILE_PATH = "/.hidden_folder/pathtofile/secrets_file.json"
 
 # NOT MANDATORY
 DJSM_SECRET_KEY_NAME = "__secret_key_name__"
-DJSM_SECRET_KEY_FILE_PATH = ".hidden_folder/pathtofile/secret_key_file.json"
+DJSM_SECRET_KEY_FILE_PATH = "/.hidden_folder/pathtofile/secret_key_file.json"
 ```
 
 Your project structure should look like this:
@@ -81,7 +81,7 @@ In the file, the following should be added;
 Example:
 
 ```.env
-SECRETS_FILE_PATH = ".secrets/pathtofile/secrets.json"
+SECRETS_FILE_PATH = "/.secrets/pathtofile/secrets.json"
 ```
 
 It is advisable to save secrets in an hidden folder(by prefixing the path with a period - '.'
@@ -98,7 +98,7 @@ Example:
 
 ```.env
 
-DJSM_SECRET_KEY_FILE_PATH = ".secrets/pathtofile/secret_key.json"
+DJSM_SECRET_KEY_FILE_PATH = "/.secrets/pathtofile/secret_key.json"
 ```
 
 ### Import djsm
@@ -191,7 +191,7 @@ import os
 from djsm import DJSM  # DJSM is an alias for DjangoJSONSecretManager
 
 # Instantiation
-djsm = DJSM(os.getenv('SECRETS_FILE_PATH'))
+djsm = DJSM(os.getenv('DJSM_SECRETS_FILE_PATH'))
 
 # get a secret, say DB_PASSWORD
 db_password = djsm.get_secret("DB_PASSWORD")
