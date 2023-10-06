@@ -6,18 +6,11 @@ from .crypt import Crypt
 
 class JSONCrypt(Crypt):
     """
-    ### A subclass of the Crypt class that encrypts and decrypts JSON objects.
-
-    :param enc_fernet_key: encrypted fernet key string
-    :param public_key: public key
-    :param private_key: private key
-    :param hash_algorithm: hash algorithm to use for signing and verifying.
-    Supported algorithms are: 'SHA-1', 'SHA-224', 'SHA-256', 'SHA-384', 'SHA-512'.
+    #### A subclass of the Crypt class that encrypts and decrypts JSON objects.
 
     :attr rsa_key_strength: rsa encryption key strength.
     :attr sign_and_verify_key: whether to sign and verify the fernet key on encryption and decryption. Default to True.
     :attr suppress_warnings: whether to suppress all warnings during encryption and decryption.
-
     :prop rsa_key_length: rsa encryption key length.
 
     NOTE: The higher the encryption key strength, the longer it takes to encrypt and decrypt but the more secure it is.
@@ -133,8 +126,7 @@ class JSONCrypt(Crypt):
             warnings.warn("Tuples are not recommended for JSON", RuntimeWarning)
         if not isinstance(tuple_, tuple):
             raise TypeError(tuple_)
-        e_tuple_ = self.encrypt_list(list(tuple_))
-        return e_tuple_
+        return self.encrypt_list(list(tuple_))
 
 
     def encrypt_set(self, set_: set):
@@ -149,8 +141,7 @@ class JSONCrypt(Crypt):
             print("set will be encrypted as a list")
         if not isinstance(set_, set):
             raise TypeError(set_)
-        e_set_ = self.encrypt_list(list(set_))
-        return e_set_
+        return self.encrypt_list(list(set_))
 
 
     def encrypt_list(self, list_: List):
@@ -164,8 +155,11 @@ class JSONCrypt(Crypt):
             raise TypeError(list_)
         encrypted_list = []
         for item in list_:
-            encrypted_item = getattr(self, f"encrypt_{type(item).__name__.lower()}")(item)
-            encrypted_list.append(encrypted_item)
+            if item is not None and item != "":
+                encrypted_item = getattr(self, f"encrypt_{type(item).__name__.lower()}")(item)
+                encrypted_list.append(encrypted_item)
+            else:
+                encrypted_list.append(item)
         return encrypted_list
 
     
@@ -180,8 +174,11 @@ class JSONCrypt(Crypt):
             raise TypeError(cipher_list)
         decrypted_list = []
         for item in cipher_list:
-            decrypted_item = getattr(self, f"decrypt_{type(item).__name__.lower()}")(item)
-            decrypted_list.append(decrypted_item)
+            if item is not None and item != "":
+                decrypted_item = getattr(self, f"decrypt_{type(item).__name__.lower()}")(item)
+                decrypted_list.append(decrypted_item)
+            else:
+                decrypted_list.append(item)
         return decrypted_list
 
     
@@ -196,8 +193,11 @@ class JSONCrypt(Crypt):
             raise TypeError(dict_)
         encrypted_dict = {}
         for key, value in dict_.items():
-            encrypted_value = getattr(self, f"encrypt_{type(value).__name__.lower()}")(value)
-            encrypted_dict[key] = encrypted_value
+            if value is not None and value != "":
+                encrypted_value = getattr(self, f"encrypt_{type(value).__name__.lower()}")(value)
+                encrypted_dict[key] = encrypted_value
+            else:
+                encrypted_dict[key] = value
         return encrypted_dict
 
     
@@ -212,6 +212,9 @@ class JSONCrypt(Crypt):
             raise TypeError(cipher_dict)
         decrypted_dict = {}
         for key, value in cipher_dict.items():
-            decrypted_value = getattr(self, f"decrypt_{type(value).__name__.lower()}")(value)
-            decrypted_dict[key] = decrypted_value
+            if value is not None and value != "":
+                decrypted_value = getattr(self, f"decrypt_{type(value).__name__.lower()}")(value)
+                decrypted_dict[key] = decrypted_value
+            else:
+                decrypted_dict[key] = value
         return decrypted_dict        

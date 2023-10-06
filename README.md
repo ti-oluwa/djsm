@@ -349,8 +349,4 @@ print(env_variables)
 * [cryptography](https://pypi.org/project/cryptography/)
 * [rsa](https://pypi.org/project/rsa/)
 
-#### Contributors and feedbacks are welcome. For feedbacks, please open an issue or contact me at tioluwa.dev@gmail.com or on twitter [@ti_oluwa_](https://twitter.com/ti_oluwa_)
-
-#### To contribute, please fork the repo and submit a pull request
-
-#### If you find this module useful, please consider giving it a star. Thanks!
+Contributions are welcome. Please fork the repository and submit a pull request.
