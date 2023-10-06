@@ -1,3 +1,4 @@
 **/pyproject.toml
 **/__pycache__
 **/djsm.egg-info
+changelog.txt
