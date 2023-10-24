@@ -2,10 +2,9 @@
 
 ## What is DJSM?
 
-DJSM is a light weight Python module that allows you to store secrets encrypted in a JSON file and access them easily in your Django project. DJSM uses Fernet encryption combined with RSA encryption to keep secrets secure.
+DJSM is a light weight Python module that allows you to store secrets encrypted in a JSON file and access them easily in your Django project along side other utility classes for data encryption and decryption. DJSM uses Fernet encryption combined with RSA encryption to keep secrets secure.
 
 [View Project on PyPI](https://pypi.org/project/djsm/)
-
 
 ## Installation and Quick Setup
 
@@ -20,11 +19,12 @@ pip install djsm
 Copy this into a .env file just outside your project (adjust as needed)
 
 ```.env
-DJSM_SECRETS_FILE_PATH = "/.hidden_folder/pathtofile/secrets_file.json"
+DJSM_SECRETS_FILE_PATH = "./.secretfolder/path/secrets.json" 
+# Assign path to file you want secrets to be stored in. Even if it does not exist yet
 
 # NOT MANDATORY
-DJSM_SECRET_KEY_NAME = "__secret_key_name__"
-DJSM_SECRET_KEY_FILE_PATH = "/.hidden_folder/pathtofile/secret_key_file.json"
+DJSM_SECRET_KEY_NAME = "secretkey"
+# Change to any preferred name
 ```
 
 Your project structure should look like this:
@@ -93,21 +93,14 @@ Example:
 DJSM_SECRET_KEY_NAME = 'secret_key'
 ```
 
-* **`DJSM_SECRET_KEY_FILE_PATH`** -> DJSM stores the Django secret key in a separate file, whose file path is provided by this variable, otherwise, the Django secret key is stored in the secrets file.
-Example:
+### Import `get_djsm`
 
-```.env
-
-DJSM_SECRET_KEY_FILE_PATH = "/.secrets/pathtofile/secret_key.json"
-```
-
-### Import djsm
-
-`djsm` is a pre-instanciated object of the class DJSM. You can import it using the following code.
-For most use cases, this is the only import you will need.
+`get_djsm` returns a DJSM object instantiated using values defined in .env file after performing necessary checks.
 
 ```python
-from djsm import djsm
+from djsm import get_djsm
+
+djsm = get_djsm()
 ```
 
 ### Generating a secret key or getting an existing key
@@ -184,14 +177,13 @@ If a secret already exists, it is updated, otherwise, it is added.
 
 * `clean_up_and_reload()` -> Calls the `clean_up()` and `reload_env()` methods.
 
-How to use the `DjangoJSONSecretManager` class:
+How to use the `DJSM` class:
 
 ```python
-import os
 from djsm import DJSM  # DJSM is an alias for DjangoJSONSecretManager
 
 # Instantiation
-djsm = DJSM(os.getenv('DJSM_SECRETS_FILE_PATH'))
+djsm = DJSM('./.secretfolder/secrets.json')
 
 # get a secret, say DB_PASSWORD
 db_password = djsm.get_secret("DB_PASSWORD")
@@ -204,13 +196,11 @@ new_secret = {"DB_PASSWORD": "new_db_password"}
 djsm.update_secrets(new_secret)
 
 # write secrets to a file
-path_to_secret_file = ".secrets/pathtofile/secrets.json"
 new_secret = {"API_KEY": "api_key"}
-djsm.write_secrets(new_secret, path_to_secret_file, overwrite=True, encrypt=True)
+djsm.write_secrets(new_secret, overwrite=True, encrypt=True)
 
 # load secrets from a file
-path_to_secret_file = ".secrets/pathtofile/secrets.json"
-secrets = djsm.load_secrets(path_to_secret_file, decrypt=True)
+secrets = djsm.load_secrets(decrypt=True)
 
 # encrypt a secret
 secret = {"API_KEY": "api_key"}
@@ -229,15 +219,16 @@ djsm.change_crypt_keys()
 This class provides methods for encrypting and decrypting strings. Its subclass is used by the `DjangoJSONSecretManager` class to encrypt and decrypt secrets. It can also be used independently. It uses RSA + Fernet encryption to encrypt and decrypt strings.
 
 It provides the following methods:
-* `generate_key()` -> Generates a new encrypted fernet key and returns a tuple of the encrypted key and the keys used to encrypt and decrypt the fernet key. This is a class method and can be called without instantiating the class.
 
-* `generate_key_as_str(encoding="utf-8")` -> Generates a new encrypted fernet key and returns a tuple of the encrypted key and the keys used to encrypt and decrypt the fernet key as strings. The key is encoded using the specified encoding. This is a class method and can be called without instantiating the class.
+* `generate_keys()` -> Generates a new encrypted fernet key and returns a tuple of the encrypted key and the keys used to encrypt and decrypt the fernet key. This is a class method and can be called without instantiating the class.
+
+* `generate_keys_as_str(encoding="utf-8")` -> Generates a new encrypted fernet key and returns a tuple of the encrypted key and the keys used to encrypt and decrypt the fernet key as strings. The key is encoded using the specified encoding. This is a class method and can be called without instantiating the class.
 
 * `from_str(enc_fernet_key: str, rsa_public_key: str, rsa_private_key: str, encoding: str = 'utf-8')` -> Returns an instance of the class with the encrypted fernet key and the keys used to encrypt and decrypt the fernet key provided as strings. The key is decoded using the specified encoding. This is also a class method and can be called without instantiating the class.
 
-* `encrypt(string: str, encoding: str = 'utf-8')` -> Encrypts the string provided and returns the encrypted string. The string is decoded and the cipher string is encoded using the specified encoding.
+* `encrypt(self, object_: Any)` -> Encrypts the object provided and returns the encrypted object. The object can be a string, list, dictionary, set, etc. The encrypted is most likely a string except the object provided is an iterable of some sort which contains other objects.
 
-* `decrypt(cipher_string: str, encoding: str = 'utf-8')` -> Decrypts the cipher string provided and returns the decrypted string. The cipher string is decoded and the decrypted string is encoded using the specified encoding (This is usually the same encoding used during encryption of the string).
+* `decrypt(self, object_: Any)` -> Decrypts the encrypted object provided and returns the decrypted object.
 
 The class has the following attributes/properties:
 
@@ -252,37 +243,41 @@ Usage:
 ```python
 from djsm.crypt import Crypt
 
-# Get keys
-fernet_key, rsa_pub_key, rsa_priv_key = Crypt.generate_key()
-
-# Get key strings
-fernet_key_str, rsa_pub_key_str, rsa_priv_key_str = Crypt.generate_key_as_str()
-
 # Instantiating a Crypt object from keys
+fernet_key, rsa_pub_key, rsa_priv_key = Crypt.generate_keys()
 crypt = Crypt(fernet_key, rsa_pub_key, rsa_priv_key, hash_algorithm="SHA-256")
+# OR
+keys = Crypt.generate_keys()
+crypt = Crypt(*keys, hash_algorithm="SHA-256")
 
-# Instantiating a Crypt object from key strings
+# Alternatively, you can instantiate a Crypt object from key strings
+fernet_key_str, rsa_pub_key_str, rsa_priv_key_str = Crypt.generate_keys_as_str()
 crypt = Crypt.from_str(fernet_key_str, rsa_pub_key_str, rsa_priv_key_str, encoding: str = 'utf-8')
 crypt.hash_algorithm = "SHA-256"
 text = 'Text I want to keep secret.'
+list_ = [1, 2, 3, 4, "five", "six", "seven"]
 
 # Encrypt text
 cipher_text = crypt.encrypt(text)
-print(cipher_text)
-
 # decrypt text
 decrypted_text = crypt.decrypt(cipher_text)
 assert text == decrypted_text
+
+# Encrypt list
+cipher_list = crypt.encrypt(list_)
+# decrypt list
+decrypted_list = crypt.decrypt(cipher_list)
+assert list_ == decrypted_list
 
 ```
 
 ### `JSONCrypt`
 
-This class provides methods for encrypting and decrypting JSON parsable objects . It uses the `Crypt` class to encrypt and decrypt JSON. It is a subclass of the `Crypt` class. It inherits all the methods and attributes of the `Crypt` class. It also provides the following methods:
+It is basically a `Crypt` class that has been modified to encrypt python objects, like dictionaries, lists, tuples, sets, integers, floats, etc., and return JSON serializable encrypted objects (in case you want to store the encrypted object in a JSON file/format).
 
-* `j_encrypt(json_object)` -> Encrypts JSON parsable object and returns the encrypted object.
+For example, if you encrypt a set (which is not JSON serializable), the encrypted set will be returned as a list (which is JSON serializable). If you encrypt a dictionary, the encrypted dictionary will be returned as a JSON object.
 
-* `j_decrypt(encrypted_object)` -> Decrypts the encrypted JSON parsable object and returns the decrypted object.
+It is a subclass of the `Crypt` class. It inherits all the methods and attributes of the `Crypt` class and follows the same usage pattern.
 
 Usage:
 
@@ -294,9 +289,9 @@ class CustomJSONCrypt(JSONCrypt):
     rsa_key_strength = 2
     hash_algorithm = "SHA-1"
 
-fernet_key, rsa_pub_key, rsa_priv_key = CustomJSONCrypt.generate_key()
+keys = CustomJSONCrypt.generate_keys()
 
-jcrypt = CustomJSONCrypt(fernet_key, rsa_pub_key, rsa_priv_key)
+jcrypt = CustomJSONCrypt(*keys)
 
 dictionary = {
     'foo': 'bar',
@@ -308,35 +303,14 @@ dictionary = {
     'array': [
         {'key': 'value'},
         [1, 2, 3, 4, 5],
-    ]
+    ],
 }
 
 # Encrypting the dictionary
-encrypted_dict = jcrypt.j_encrypt(dictionary)
-print(encrypted_dict)
-
+encrypted_dict = jcrypt.encrypt(dictionary)
 # Decrypting the encrypted dictionary
-decrypted_dict = jcrypt.j_decrypt(encrypted_dict)
-
+decrypted_dict = jcrypt.decrypt(encrypted_dict)
 assert dictionary == decrypted_dict
-```
-
-### Other functions and constants
-
-* `find_and_load_env_var()` -> Finds and loads environment variables from the `.env` file in the root directory(or any other directory) of the project. This is useful if you want to load newly added environment variables from the `.env` file without restarting the server. This function is called automatically when the `DjangoJSONSecretManager` class is imported.
-
-```python
-from djsm import find_and_load_env_var
-
-find_and_load_env_var()
-```
-
-* `env_variables` -> a list of all variables that must/can be set in the .env file before using the djsm object.
-
-```python
-from djsm import env_variables
-
-print(env_variables)
 ```
 
 **DO NOT DELETE `cryptkeys.json`. IF YOU DO, ALL ENCRYPTED SECRET WILL BE LOST**

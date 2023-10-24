@@ -1,34 +1,33 @@
 """
 ----------------------------------
 djsm - Django JSON Secrets Manager
-==================================
+----------------------------------
 djsm helps create, store, retrieve, update and manage secrets in Django
 
-LICENSE: MIT
+LICENSE: GPLv3
 """
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 __author__ = "Daniel T. Afolayan (ti-oluwa)"
 __license__ = "MIT"
 
 import os
 import sys
 
-from .manager import DjangoJSONSecretManager as DJSM
-from .manager import check_setup_ok
+from .manager import DJSM
+from .misc import check_setup_ok
 
-_setup_checked = False
+__djsm_setup_checked = False
 
-def _check_setup():
-    global _setup_checked
-    if not _setup_checked:
+def get_djsm():
+    """
+    Returns an instance of the DJSM class instantiated based on the environment variables set.
+    """
+    global __djsm_setup_checked
+    if not __djsm_setup_checked:
         if not check_setup_ok():
             sys.exit()
-        _setup_checked = True
-    return None
+        __djsm_setup_checked = True
+    return DJSM(os.getenv('DJSM_SECRETS_FILE_PATH'))
 
-_check_setup()
-
-# Pre-instantiate a DJSM object
-djsm = DJSM(os.getenv('DJSM_SECRETS_FILE_PATH'))
 
