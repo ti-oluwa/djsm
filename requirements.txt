@@ -1,4 +1,4 @@
-  bs4-web-scraper>=0.1.3
+  simple-file-handler>=0.0.1
+  dcrypt>=0.0.1
   python-dotenv>=0.19.2
-  rsa>=4.7.2
-  cryptography
+  

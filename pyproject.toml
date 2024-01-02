@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.dynamic]
+version = {attr = "djsm.__version__"}
+
+[project]
+name = "djsm"
+dynamic = ["version"]
+
+authors = [
+  { name="Daniel T. Afolayan (ti-oluwa)", email="tioluwa.dev@gmail.com" },
+]
+maintainers = [
+  { name="Daniel T. Afolayan (ti-oluwa)", email="tioluwa.dev@gmail.com" },
+]
+description = "Light weight module that allows you to store secrets encrypted in JSON and access them easily in your Django project."
+keywords = [
+    "Django", "Django Secrets Encryption"
+]
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Operating System :: OS Independent",
+    "Development Status :: 5 - Production/Stable",
+    "Topic :: Security",
+    "Intended Audience :: Developers",
+    "Framework :: Django",
+    "Environment :: Web Environment",
+    "Natural Language :: English",
+    "Typing :: Typed",
+]
+dependencies = [
+    'python-dotenv>=0.19.2',
+    'simple-file-handler>=0.0.1',
+    'dcrypt>=0.0.1',
+]
+
+[project.urls]
+"Homepage" = "https://github.com/ti-oluwa/djsm"
+"Bug Tracker" = "https://github.com/ti-oluwa/djsm/issues"
+"Repository" = "https://github.com/ti-oluwa/djsm"
