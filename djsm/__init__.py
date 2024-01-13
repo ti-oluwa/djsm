@@ -14,7 +14,7 @@ import os
 import sys
 
 from .manager import DJSM
-from .misc import check_setup_ok
+from .misc import check_setup
 
 _djsm_setup_checked = False
 
@@ -27,7 +27,7 @@ def get_djsm(quiet: bool = False):
     """
     global _djsm_setup_checked
     if not _djsm_setup_checked:
-        if not check_setup_ok(quiet):
+        if not check_setup(quiet):
             sys.exit()
         _djsm_setup_checked = True
     return DJSM(os.getenv('DJSM_SECRETS_FILE_PATH'), quiet=quiet)

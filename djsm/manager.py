@@ -1,6 +1,5 @@
 from typing import Any, Dict
 import os
-from django.conf.locale import fr
 import simple_file_handler as sfh
 from dotenv import find_dotenv, dotenv_values
 import dcrypt
@@ -149,18 +148,18 @@ class DjangoJSONSecretManager:
         return None
 
 
-    def change_crypt_keys(self) -> None:
+    def change_cryptkeys(self) -> None:
         """
         Change the encryption keys
         """
         # Get existing secrets
-        secrets = self.load_secrets(self.secrets_file_path, decrypt=True)
+        secrets = self._load_secrets(self.secrets_file_path, decrypt=True)
         # Delete fernet and rsa public keys in JSON file - Just delete the cryptkeys file
         sfh.FileHandler(self.cryptkeys_filepath).delete_file()
         # Delete rsa private key in .env file
         self._remove_priv_key_from_env()
         # Re-write secrets (overwrite) while encrypting them with new keys
-        self.write_secrets(secrets, self.secrets_file_path, encrypt=True, overwrite=True)
+        self._write_secrets(secrets, self.secrets_file_path, encrypt=True, overwrite=True)
         del secrets
         return None
         
@@ -185,6 +184,7 @@ class DjangoJSONSecretManager:
             self.stdout("DJSM: Secret Key Generated Successfully!\n")
         else:
             self.stdout("DJSM: Secret Key Found!\n")
+
         if not validate_secret_key(secret_key):
             self.stdout("DJSM: Invalid Secret Key. Replacing Key...\n")
             # Replace secret key if the secret key is not valid and return the new secret key
@@ -192,7 +192,7 @@ class DjangoJSONSecretManager:
         return secret_key
 
 
-    def write_secrets(
+    def _write_secrets(
             self, 
             secrets: Dict[str, Any], 
             path_to_file: str, 
@@ -226,7 +226,7 @@ class DjangoJSONSecretManager:
         return None
 
     
-    def load_secrets(self, path_to_file: str, decrypt: bool = False) -> Dict:
+    def _load_secrets(self, path_to_file: str, decrypt: bool = False) -> Dict:
         """
         Loads the secrets from the given path.
 
@@ -257,7 +257,7 @@ class DjangoJSONSecretManager:
         :param key: key to get from the json file(s)
         :return: secret if found, None if not
         """ 
-        enc_secrets = self.load_secrets(self.secrets_file_path)
+        enc_secrets = self._load_secrets(self.secrets_file_path)
         enc_secret = enc_secrets.get(key, None)
         if enc_secret:
             dec_secret = self._decrypt({key: enc_secret})
@@ -274,7 +274,7 @@ class DjangoJSONSecretManager:
         """
         if not isinstance(new_secrets, dict):
             raise TypeError('Secret must be a dictionary')
-        self.write_secrets(new_secrets, self.secrets_file_path, encrypt=True)
+        self._write_secrets(new_secrets, self.secrets_file_path, encrypt=True)
         del new_secrets
         return None
 

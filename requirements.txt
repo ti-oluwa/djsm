@@ -1,4 +1,4 @@
-  simple-file-handler>=0.0.1
-  dcrypt>=0.0.1
-  python-dotenv>=0.19.2
+simple-file-handler>=0.0.1
+dcrypt>=0.0.1
+python-dotenv>=0.19.2
   
