@@ -6,9 +6,9 @@ Create, store, retrieve, update and manage secrets in your Django project.
 @Author: Daniel T. Afolayan (ti-oluwa.github.io)
 """
 
-__version__ = "0.1.3"
+__version__ = "0.1.4"
 __author__ = "Daniel T. Afolayan (ti-oluwa)"
-__license__ = "GPLv3"
+__license__ = "MIT"
 
 import os
 import sys
