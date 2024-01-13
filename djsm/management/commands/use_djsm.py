@@ -62,7 +62,7 @@ def get_secret_key_line_index(settings_lines: List[str]) -> int:
     :return: The index of the line in the project's settings file that contains the secret key.
     Returns -1 if there is no such line.
     """
-    pattern = re.compile(r'^SECRET_KEY\s*=\s*[\'"]?.*[\'"]?\s*$')
+    pattern = re.compile(r'^SECRET_KEY\s*=\s*[\'"]+.*[\'"]+\s*$')
     for index, line in enumerate(settings_lines):
         if pattern.match(line):
             return index
