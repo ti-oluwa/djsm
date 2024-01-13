@@ -28,7 +28,7 @@ def _print(msg: str, quiet: bool = False):
         sys.stdout.write(msg)
 
 
-def check_setup_ok(quiet: bool = False):
+def check_setup(quiet: bool = False):
     """
     Check that an .env file is present and has been properly setup
     
@@ -43,13 +43,13 @@ def check_setup_ok(quiet: bool = False):
     except IOError:
         setup_ok = False
         _print("DJSM: Could not load or find .env file!\n")
-        return setup_ok
 
-    _print("DJSM: Checking that .env file has been properly setup...\n", quiet=quiet)
-    env_file_dict = dotenv_values(dotenv_path)
-    if not env_file_dict.get('DJSM_SECRETS_FILE_PATH', None):
-        _print('DJSM: DJSM_SECRETS_FILE_PATH not set in .env file\n')
-        setup_ok = False
+    if setup_ok:
+        _print("DJSM: Checking that .env file has been properly setup...\n", quiet=quiet)
+        env_file_dict = dotenv_values(dotenv_path)
+        if not env_file_dict.get('DJSM_SECRETS_FILE_PATH', None):
+            _print('DJSM: DJSM_SECRETS_FILE_PATH not set in .env file\n')
+            setup_ok = False
         
     if setup_ok:
         load_dotenv(dotenv_path, override=True)
