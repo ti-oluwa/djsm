@@ -129,13 +129,13 @@ DATABASES = {
 }
 ```
 
-You could also define optional flags when running the above command. For example;
+You could also use optional flags when running the above command. For example;
 
 ```bash
 python manage.py use_djsm --as "secrets_manager"
 ```
 
-Lets you define the name of the djsm in settings.py. Also, you could the `--quiet` flag to prevent manager created from printing setup/process logs to the console.
+Lets you define the name of the djsm in settings.py. Also, you could the `--quiet` flag to prevent the manager created from printing setup/process logs to the console.
 
 ```bash
 python manage.py use_djsm --as "secrets_manager" --quiet
@@ -143,7 +143,7 @@ python manage.py use_djsm --as "secrets_manager" --quiet
 
 ### Other CLI/Management commands
 
-Apart from the `use_djsm` command, there are two other useful commands that can be run in your project. 
+Apart from the `use_djsm` command, there are two other useful commands that can be run in your project.
 
 * Add to or update existing secrets
 
@@ -157,7 +157,7 @@ For example:
 python manage.py update_secrets 'api_key' '32456789456sdtfg'
 ```
 
-However, you should note that the value passed must be a JSON formatted string. See an example of me saving a mapping of my django projects detail below.
+However, you should note that the value passed must be a JSON formatted string. See an example of saving a mapping of my django project's contact detail below.
 
 ```bash
 python manage.py update_secrets 'project_emails' '{\"project_email\": \"support@myproject.com\", \"admin_email\": \"admin@myproject.com\"}'
