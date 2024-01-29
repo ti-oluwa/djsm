@@ -4,6 +4,13 @@ from django.core.management.base import BaseCommand, CommandParser
 import djsm
 
 
+def parse_value(value: str) -> str:
+    try:
+        return json.loads(value)
+    except json.JSONDecodeError:
+        return value
+    
+
 class Command(BaseCommand):
     """
     Update secrets file with new secrets. The secrets file updated is the one defined in the .env file.
@@ -26,7 +33,7 @@ class Command(BaseCommand):
 
         parser.add_argument(
             'value',
-            type=json.loads,
+            type=parse_value,
             help='The value of the secret to be updated.',
         )
 
