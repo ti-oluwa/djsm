@@ -20,6 +20,6 @@ class Command(BaseCommand):
         manager = djsm.get_djsm(quiet=True)
         manager.clean_up()
         self.stdout.write(
-            self.style.SUCCESS(f'DJSM: Clean up completed!')
+            self.style.SUCCESS('DJSM: Clean up completed!')
         )
         return None

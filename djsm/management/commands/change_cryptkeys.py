@@ -20,6 +20,6 @@ class Command(BaseCommand):
         manager = djsm.get_djsm(quiet=True)
         manager.change_cryptkeys()
         self.stdout.write(
-            self.style.SUCCESS(f'DJSM: Encryption keys change was successfully!')
+            self.style.SUCCESS('DJSM: Encryption keys change was successfully!')
         )
         return None

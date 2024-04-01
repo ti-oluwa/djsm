@@ -45,6 +45,6 @@ class Command(BaseCommand):
         manager = djsm.get_djsm(quiet=True)
         manager.update_secrets({name: value})
         self.stdout.write(
-            self.style.SUCCESS(f'DJSM: Secrets updated successfully!')
+            self.style.SUCCESS('DJSM: Secrets updated successfully!')
         )
         return None

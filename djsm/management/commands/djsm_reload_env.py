@@ -20,6 +20,6 @@ class Command(BaseCommand):
         manager = djsm.get_djsm(quiet=True)
         manager.reload_env()
         self.stdout.write(
-            self.style.SUCCESS(f'DJSM: Reload complete!')
+            self.style.SUCCESS('DJSM: Reload complete!')
         )
         return None

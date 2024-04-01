@@ -14,7 +14,7 @@ env_variables = (
 )
 
 
-def find_and_load_env_var():
+def find_and_load_env_var() -> None:
     """Load environment variables from .env file"""
     try:
         load_dotenv(find_dotenv('.env', raise_error_if_not_found=True), override=True)
@@ -23,12 +23,12 @@ def find_and_load_env_var():
     return None
 
 
-def _print(msg: str, quiet: bool = False):
+def _print(msg: str, quiet: bool = False) -> None:
     if not quiet:
         sys.stdout.write(msg)
 
 
-def check_setup(quiet: bool = False):
+def check_setup(quiet: bool = False) -> bool:
     """
     Check that an .env file is present and has been properly setup
     
@@ -59,7 +59,7 @@ def check_setup(quiet: bool = False):
     return setup_ok
  
 
-def validate_secret_key(secret_key: str):
+def validate_secret_key(secret_key: str) -> bool:
     """Check that Django secret key is valid."""
     if not isinstance(secret_key, str):
         return False
@@ -71,7 +71,7 @@ def validate_secret_key(secret_key: str):
     return True
 
 
-def generate_django_secret_key(length: int = 50):
+def generate_django_secret_key(length: int = 50) -> str:
     """
     Return a randomly generated key of not less than 32 characters
     

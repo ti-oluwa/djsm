@@ -15,7 +15,7 @@ authors = [
 maintainers = [
   { name="Daniel T. Afolayan (ti-oluwa)", email="tioluwa.dev@gmail.com" },
 ]
-description = "Light weight module that allows you to store secrets encrypted in JSON and access them easily in your Django project."
+description = "Django package that allows you to store secrets encrypted in JSON and access them easily in your Django project."
 keywords = [
     "Django", "Django Secrets Encryption"
 ]
