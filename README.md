@@ -1,6 +1,6 @@
-## DJSM - Django JSON Secrets Manager
+# DJSM - Django JSON Secrets Manager
 
-Light weight Python module that allows you to easily store and access your Django project's secrets like secret key, database password, etc., encrypted in a JSON file.
+Django package that allows you to easily store and access your Django project's secrets like secret key, database password, etc., encrypted in a JSON file.
 
 [View package on PyPI](https://pypi.org/project/djsm/)
 
@@ -14,41 +14,12 @@ pip install djsm
 
 * Setup or update a '.env' file for your project.
 
-Copy this into a .env file just outside your project (adjust as needed)
-
 ```.env
-DJSM_SECRETS_FILE_PATH = "./.secretfolder/path/secrets.json" 
+DJSM_SECRETS_FILE_PATH = "./.enc/path/secrets.json" 
 # Assign path to file you want secrets to be stored in. Even if it does not exist yet
 
 # NOT MANDATORY
 DJSM_SECRET_KEY_NAME = "secretkey"
-```
-
-Your project structure should look like this:
-
-```bash
-|-- my_project
-|   |-- my_project
-|   |   |-- __init__.py
-|   |   |-- settings.py
-|   |   |-- urls.py
-|   |   |-- wsgi.py
-|   |
-|   |-- my_app
-|   |   |-- __init__.py
-|   |   |-- admin.py
-|   |   |-- apps.py
-|   |   |-- models.py
-|   |   |-- tests.py
-|   |   |-- views.py
-|   |
-|   |-- db.sqlite3
-|   |-- manage.py
-|   |-- .gitignore
-|   |-- requirements.txt
-|
-|-- venv
-|-- .env
 ```
 
 * Import the package in your Django project
@@ -71,14 +42,13 @@ If everything was setup successfully, you should see "Setup OK!" on the terminal
 
 ## Usage
 
-Before starting, a '.env' file has to be created just outside the django project directory.
-In the file, the following should be added;
+Before starting, a '.env' file has to be created. In the file, the following should be added;
 
 * **`DJSM_SECRETS_FILE_PATH`** -> Path(preferably absolute) to file where all secrets will be stored.
 Example:
 
 ```.env
-SECRETS_FILE_PATH = "/.secrets/pathtofile/secrets.json"
+DJSM_SECRETS_FILE_PATH = "/.enc/pathtofile/secrets.json"
 ```
 
 * **`DJSM_SECRET_KEY_NAME`** -> Name with which the Django secret key should be stored.
@@ -239,7 +209,7 @@ This class is the main class of the module. It provides the following methods:
 from djsm import DJSM  # DJSM is an alias for DjangoJSONSecretManager
 
 # Create a DJSM object
-secrets_manager = DJSM('./.secretfolder/secrets.json')
+secrets_manager = DJSM('./.enc/secrets.json')
 ```
 
 **DO NOT DELETE `cryptkeys.json` or any of the encryption keys. IF YOU DO, ALL ENCRYPTED SECRET WILL BE LOST**

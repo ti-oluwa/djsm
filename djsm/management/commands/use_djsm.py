@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from django.conf import settings
+from django.conf import settings, Settings
 import simple_file_handler as sfh
 from typing import List
 import re
@@ -8,7 +8,7 @@ from django.utils.module_loading import import_string
 from ...manager import DJSM
 
 
-def get_settings_filepath():
+def get_settings_filepath() -> str | None:
     """Return the path to the project's settings file."""
     try:
         settings.configure()
@@ -33,7 +33,7 @@ def check_if_djsm_is_imported_in_settings(settings_lines: List[str]) -> bool:
         if line.startswith(("#", "'''", '"""')) or line.strip() == '':
             continue
         # Ignore lines that are not imports.
-        if not line.startswith(('import', 'from')):
+        if not line.startswith(('import ', 'from ')):
             continue
         # If any of the possible imports are in the line, return True.
         if any(map(lambda x: x in line, possible_imports)):
@@ -41,13 +41,13 @@ def check_if_djsm_is_imported_in_settings(settings_lines: List[str]) -> bool:
     return False
 
 
-def get_djsm_obj_name_in_settings() -> DJSM | None:
+def get_djsm_obj_name_in_settings() -> str | None:
     """
     Return the name of the DJSM object in the project's settings file, If there is one.
 
     If there is no DJSM object in the project's settings file, return None.
     """
-    settings_module = import_string(settings.SETTINGS_MODULE)
+    settings_module: Settings = import_string(settings.SETTINGS_MODULE)
     for name, obj in settings_module.__dict__.items():
         if isinstance(obj, DJSM):
             return name
@@ -62,10 +62,13 @@ def get_secret_key_line_index(settings_lines: List[str]) -> int:
     :return: The index of the line in the project's settings file that contains the secret key.
     Returns -1 if there is no such line.
     """
-    pattern = re.compile(r'^SECRET_KEY\s*=\s*[\'"]+.*[\'"]+\s*$')
-    for index, line in enumerate(settings_lines):
+    pattern = re.compile(r'^SECRET_KEY\s*=\s*.*\s*$')
+    # Iterate through the lines in reverse order, 
+    # so the last definition of the `SECRET_KEY` setting is replaced
+    for i in range(len(settings_lines) - 1, -1, -1):
+        line = settings_lines[i].strip()
         if pattern.match(line):
-            return index
+            return i
     return -1
 
 
@@ -76,11 +79,16 @@ def get_index_of_line_after_top_imports(settings_lines: List[str]) -> int:
     :param settings_lines: list containing the lines of the project's settings file.
     :return: The index of the line after the imports in the project's settings file.
     Returns 0 if there are no lines or imports in the project's settings file.
+
+    NOTE: This does not factor in imports that a wrapped in a try-except block
     """
     for index, line in enumerate(settings_lines):
-        if line.strip() == '':
+        line = line.strip()
+        # If the line is empty, a comment or a docstring line, skip it
+        if not line or line.startswith(("#", "'''", '"""')):
             continue
-        if line.startswith(('import', 'from')):
+        # If it is an import line, skip it
+        if line.startswith(('import ', 'from ')):
             continue
         return index
     return 0
@@ -108,7 +116,7 @@ def manage_secret_key_with_djsm(manager_name: str, quiet: bool, command: BaseCom
         index_after_top_imports = get_index_of_line_after_top_imports(lines)
         secret_key_line = f'''SECRET_KEY = {manager_name}.get_or_create_secret_key()'''
 
-        if has_been_imported and djsm_obj_name:
+        if has_been_imported is True and djsm_obj_name is not None:
             pattern = re.compile(
                 f'''^SECRET_KEY\\s*=\\s*{djsm_obj_name}\\.[a-zA-Z_]*\\(([\\'"]+[\\w]*[\\'"]+)?\\)\\s*$'''
             )
@@ -117,16 +125,19 @@ def manage_secret_key_with_djsm(manager_name: str, quiet: bool, command: BaseCom
                 command.stdout.write(
                     command.style.SUCCESS(f'DJSM: Looks like DJSM already manages the secret key for {project_name}!')
                 )
-                return None
+                return
             lines[secret_key_line_index] = f'''SECRET_KEY = {djsm_obj_name}.get_or_create_secret_key()'''
 
-        elif has_been_imported and not djsm_obj_name:
+        elif has_been_imported is True and djsm_obj_name is None:
             setup_line = f"""{manager_name} = djsm.get_djsm(quiet={quiet})"""
             lines.insert(index_after_top_imports, setup_line)
             lines[secret_key_line_index] = secret_key_line
 
-        elif not has_been_imported and not djsm_obj_name:
-            setup_line = f"""import djsm\n\n{manager_name} = djsm.get_djsm(quiet={quiet})"""
+        elif has_been_imported is False and djsm_obj_name is None:
+            # Import package at the top of the file
+            lines.insert(0, "import djsm")
+            setup_line = f"""\n{manager_name} = djsm.get_djsm(quiet={quiet})"""
+            # Setup manager after import
             lines.insert(index_after_top_imports, setup_line)
             lines[secret_key_line_index] = secret_key_line
 

@@ -19,8 +19,9 @@ def _get_env_hdl():
 
 class DjangoJSONSecretManager:
     cryptkeys_filename = 'cryptkeys.json'
+    """The default name in which the manager's cryptkeys will be stored"""
 
-    def __init__(self, path_to_secret_file: str, *, quiet: bool = False):
+    def __init__(self, path_to_secret_file: str, *, quiet: bool = False) -> None:
         """
         Creates a new DjangoJSONSecretManager object.
 
@@ -50,7 +51,7 @@ class DjangoJSONSecretManager:
         return None
 
     @property
-    def cryptkeys_filepath(self):
+    def cryptkeys_filepath(self) -> str:
         """Returns the path to the crypt keys file"""
         return f"{os.path.dirname(self.secrets_file_path)}\\{self.cryptkeys_filename.split('.')[0]}.json"
     
@@ -77,11 +78,11 @@ class DjangoJSONSecretManager:
                 cryptkeys: Dict = crypt_keys_file_hdl.read_file()
                 m_key = cryptkeys.get('DJSM_MASTER_KEY', None)
                 pub_key = cryptkeys.get('DJSM_PUBLIC_KEY', None)
-            except:
+            except Exception:
                 m_key, pub_key = None, None
             priv_key = os.getenv('DJSM_PRIVATE_KEY')
 
-            if all((m_key, pub_key, priv_key)) == False:
+            if all((m_key, pub_key, priv_key)) is False:
                 key_signature = dcrypt.CryptKey.make_signature(hash_algorithm="SHA-256")
                 m_key, pub_key, priv_key, _ = key_signature.common()
                 cryptkeys = {
@@ -117,12 +118,12 @@ class DjangoJSONSecretManager:
                 cryptkeys: Dict = crypt_keys_file_hdl.read_file()
                 m_key: str = cryptkeys.get('DJSM_MASTER_KEY', None)
                 pub_key: str = cryptkeys.get('DJSM_PUBLIC_KEY', None)
-            except:
+            except Exception:
                 m_key, pub_key = None, None
 
             priv_key: str = os.getenv('DJSM_PRIVATE_KEY')
 
-            if all((m_key, pub_key, priv_key)) == False:
+            if all((m_key, pub_key, priv_key)) is False:
                 raise CryptKeysNotFound("Crypt key(s) not found. Secrets will not be recoverable")
 
             common_signature = dcrypt.CommonSignature(m_key, pub_key, priv_key, "SHA-256")
@@ -193,12 +194,12 @@ class DjangoJSONSecretManager:
 
 
     def _write_secrets(
-            self, 
-            secrets: Dict[str, Any], 
-            path_to_file: str, 
-            overwrite: bool = False, 
-            encrypt: bool = False
-        ) -> None:
+        self, 
+        secrets: Dict[str, Any], 
+        path_to_file: str, 
+        overwrite: bool = False, 
+        encrypt: bool = False
+    ) -> None:
         """
         Writes the secrets in the given path.
 
